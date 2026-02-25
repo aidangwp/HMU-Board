@@ -12,9 +12,17 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #000000 url('https://upload.wikimedia.org/wikipedia/commons/7/7e/Night_View-Moon-Star.jpg') center/cover no-repeat fixed;
+      background: #000000;
       font-family: 'Segoe UI', sans-serif;
       color: #ffffff;
+    }
+
+    #bg-video {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      z-index: -1;
     }
 
     .card {
@@ -35,6 +43,7 @@
       text-align: center;
       overflow: hidden;
       position: relative;
+      min-height: 60px;
     }
 
     .led-preview span {
@@ -52,16 +61,17 @@
     }
 
     h1 {
-      font-size: 1.3rem;
-      font-weight: 600;
-      margin-bottom: 6px;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
       color: #ffffff;
+      letter-spacing: 0.05em;
     }
 
     p.subtitle {
       font-size: 0.85rem;
       color: #ffffff;
-      margin-bottom: 24px;
+      margin-bottom: 40px;
     }
 
     label {
@@ -149,13 +159,27 @@
 </head>
 <body>
 
+<video id="bg-video" autoplay muted loop playsinline>
+  <source src="https://upload.wikimedia.org/wikipedia/commons/6/62/Phone_Booth_-_Tokyo_-_Feb_27_2021.webm" type="video/webm" />
+</video>
+
+<audio id="bg-audio" autoplay loop>
+  <source src="https://upload.wikimedia.org/wikipedia/commons/5/50/Cebu_City_at_night.ogg" type="audio/ogg" />
+</audio>
+
+<script>
+  // Set volume low once audio is ready
+  const audio = document.getElementById("bg-audio");
+  audio.volume = 0.2;
+</script>
+
 <div class="card">
   <div class="led-preview">
-    <span id="preview-text" style="color: #ff2200; text-shadow: 0 0 8px #ff2200;">Your message will scroll here...</span>
+    <span id="preview-text" style="color: #ff2200; text-shadow: 0 0 8px #ff2200;"></span>
   </div>
 
   <h1>Send Me Your Words</h1>
-
+  <p class="subtitle">Send a message to the screen...</p>
 
   <label for="name">Your Name</label>
   <input type="text" id="name" placeholder=" " maxlength="50" oninput="updatePreview()" />
@@ -250,10 +274,10 @@
         updated_at: serverTimestamp()
       });
       statusEl.className = "status success";
-      statusEl.textContent = "Message sent.";
+      statusEl.textContent = "✓ Message sent to the board!";
       nameEl.value = "";
       messageEl.value = "";
-      document.getElementById("preview-text").textContent = "xxx";
+      document.getElementById("preview-text").textContent = "";
       document.getElementById("name-char-count").textContent = "0 / 50";
       document.getElementById("message-char-count").textContent = "0 / 200";
     } catch (err) {
@@ -294,7 +318,7 @@
     } else if (message) {
       previewEl.textContent = "...: " + message;
     } else {
-      previewEl.textContent = " ";
+      previewEl.textContent = "";
     }
   };
 </script>
