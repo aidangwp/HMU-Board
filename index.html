@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LED Message Board</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f0f0f;
+      font-family: 'Segoe UI', sans-serif;
+      color: #f0f0f0;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    .led-preview {
+      background: #000;
+      border: 2px solid #222;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 32px;
+      text-align: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .led-preview span {
+      display: inline-block;
+      font-family: 'Courier New', monospace;
+      font-size: 22px;
+      font-weight: bold;
+      color: #ff4400;
+      text-shadow: 0 0 8px #ff4400, 0 0 16px #ff2200;
+      white-space: nowrap;
+      animation: scroll-text 10s linear infinite;
+    }
+
+    @keyframes scroll-text {
+      0%   { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #ffffff;
+    }
+
+    p.subtitle {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #888;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 1rem;
+      color: #f0f0f0;
+      margin-bottom: 6px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: #ff4400;
+    }
+
+    .char-count {
+      font-size: 0.75rem;
+      color: #555;
+      text-align: right;
+      margin-bottom: 18px;
+    }
+
+    .char-count.warning { color: #ff4400; }
+
+    button {
+      width: 100%;
+      padding: 13px;
+      background: #ff4400;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover { background: #e03d00; }
+    button:active { transform: scale(0.98); }
+    button:disabled { background: #444; cursor: not-allowed; }
+
+    .status {
+      margin-top: 16px;
+      font-size: 0.85rem;
+      text-align: center;
+      min-height: 20px;
+      color: #888;
+    }
+
+    .status.success { color: #4caf50; }
+    .status.error   { color: #f44336; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="led-preview">
+    <span id="preview-text">Your message will scroll here...</span>
+  </div>
+
+  <h1>LED Message Board</h1>
+  <p class="subtitle">Type a message and send it to the screen!</p>
+
+  <label for="name">Your Name</label>
+  <input type="text" id="name" placeholder="e.g. Alice" maxlength="50" oninput="updatePreview()" />
+  <div class="char-count" id="name-char-count">0 / 50</div>
+
+  <label for="message">Message</label>
+  <input type="text" id="message" placeholder="Type something..." maxlength="200" oninput="updatePreview()" />
+  <div class="char-count" id="message-char-count">0 / 200</div>
+
+  <button id="submit-btn" onclick="submitMessage()">Send to Board</button>
+  <div class="status" id="status"></div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBDH2JIvcXxsmMwIdJzO6JGKvZ41zwuTPs",
+    authDomain: "messageboard-d53f7.firebaseapp.com",
+    projectId: "messageboard-d53f7",
+    storageBucket: "messageboard-d53f7.firebasestorage.app",
+    messagingSenderId: "51453655338",
+    appId: "1:51453655338:web:9408482b4c47e6f5f28653"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  window.submitMessage = async function () {
+    const nameEl    = document.getElementById("name");
+    const messageEl = document.getElementById("message");
+    const statusEl  = document.getElementById("status");
+    const btn       = document.getElementById("submit-btn");
+
+    const name    = nameEl.value.trim();
+    const message = messageEl.value.trim();
+
+    if (!name) {
+      statusEl.className = "status error";
+      statusEl.textContent = "Please enter your name.";
+      return;
+    }
+    if (!message) {
+      statusEl.className = "status error";
+      statusEl.textContent = "Please enter a message.";
+      return;
+    }
+
+    btn.disabled = true;
+    statusEl.className = "status";
+    statusEl.textContent = "Sending...";
+
+    try {
+      await setDoc(doc(db, "board", "message"), {
+        name: name,
+        message: message,
+        updated_at: serverTimestamp()
+      });
+      statusEl.className = "status success";
+      statusEl.textContent = "✓ Message sent to the board!";
+      nameEl.value = "";
+      messageEl.value = "";
+      document.getElementById("preview-text").textContent = "Your message will scroll here...";
+      document.getElementById("name-char-count").textContent = "0 / 50";
+      document.getElementById("message-char-count").textContent = "0 / 200";
+    } catch (err) {
+      statusEl.className = "status error";
+      statusEl.textContent = "Error: " + err.message;
+      console.error(err);
+    }
+
+    btn.disabled = false;
+  };
+
+  window.updatePreview = function () {
+    const name    = document.getElementById("name").value.trim();
+    const message = document.getElementById("message").value.trim();
+
+    const nameCount    = document.getElementById("name").value.length;
+    const messageCount = document.getElementById("message").value.length;
+
+    const nameCountEl    = document.getElementById("name-char-count");
+    const messageCountEl = document.getElementById("message-char-count");
+
+    nameCountEl.textContent    = nameCount + " / 50";
+    messageCountEl.textContent = messageCount + " / 200";
+    nameCountEl.className    = "char-count" + (nameCount > 40 ? " warning" : "");
+    messageCountEl.className = "char-count" + (messageCount > 160 ? " warning" : "");
+
+    if (name && message) {
+      document.getElementById("preview-text").textContent = name + ": " + message;
+    } else if (name) {
+      document.getElementById("preview-text").textContent = name + ": ...";
+    } else if (message) {
+      document.getElementById("preview-text").textContent = "...: " + message;
+    } else {
+      document.getElementById("preview-text").textContent = "Your message will scroll here...";
+    }
+  };
+</script>
+
+</body>
+</html>
