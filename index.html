@@ -102,7 +102,7 @@
 
     .char-count {
       font-size: 0.75rem;
-      color: #555;
+      color: #ffffff;
       text-align: right;
       margin-bottom: 18px;
     }
@@ -163,14 +163,49 @@
   <source src="https://upload.wikimedia.org/wikipedia/commons/6/62/Phone_Booth_-_Tokyo_-_Feb_27_2021.webm" type="video/webm" />
 </video>
 
-<audio id="bg-audio" autoplay loop>
-  <source src="https://upload.wikimedia.org/wikipedia/commons/5/50/Cebu_City_at_night.ogg" type="audio/ogg" />
+<audio id="bg-audio" loop>
+  <source src="https://upload.wikimedia.org/wikipedia/commons/9/9d/Cebu_City_at_night.ogg" type="audio/ogg" />
 </audio>
 
+<button id="audio-btn" onclick="toggleAudio(event)" title="Toggle music" style="
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 10;
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.2s;
+" onmouseover="this.style.color='rgba(255,255,255,0.9)'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">♪</button>
+
 <script>
-  // Set volume low once audio is ready
   const audio = document.getElementById("bg-audio");
+  const btn   = document.getElementById("audio-btn");
   audio.volume = 0.2;
+  let started = false;
+
+  // Start audio on first interaction with anything on the page
+  document.addEventListener("click", function startAudio() {
+    if (!started) {
+      audio.play();
+      started = true;
+    }
+  });
+
+  window.toggleAudio = function(e) {
+    e.stopPropagation(); // prevent the click from double-triggering startAudio
+    if (audio.muted) {
+      audio.muted = false;
+      btn.textContent = "♫";
+    } else {
+      audio.muted = true;
+      btn.textContent = "♪";
+    }
+  };
 </script>
 
 <div class="card">
