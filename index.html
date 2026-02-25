@@ -155,7 +155,7 @@
   </div>
 
   <h1>Send Me Your Words</h1>
-  <p class="subtitle">Send a message to the screen...</p>
+
 
   <label for="name">Your Name</label>
   <input type="text" id="name" placeholder=" " maxlength="50" oninput="updatePreview()" />
@@ -250,10 +250,10 @@
         updated_at: serverTimestamp()
       });
       statusEl.className = "status success";
-      statusEl.textContent = "✓ Message sent to the board!";
+      statusEl.textContent = "Message sent.";
       nameEl.value = "";
       messageEl.value = "";
-      document.getElementById("preview-text").textContent = "Your message will scroll here...";
+      document.getElementById("preview-text").textContent = "xxx";
       document.getElementById("name-char-count").textContent = "0 / 50";
       document.getElementById("message-char-count").textContent = "0 / 200";
     } catch (err) {
