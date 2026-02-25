@@ -154,15 +154,15 @@
     <span id="preview-text" style="color: #ff2200; text-shadow: 0 0 8px #ff2200;">Your message will scroll here...</span>
   </div>
 
-  <h1>LED Message Board</h1>
-  <p class="subtitle">Type a message and send it to the screen!</p>
+  <h1>Send Me Your Words</h1>
+  <p class="subtitle">Send a message to the screen...</p>
 
   <label for="name">Your Name</label>
-  <input type="text" id="name" placeholder="e.g. Alice" maxlength="50" oninput="updatePreview()" />
+  <input type="text" id="name" placeholder=" " maxlength="50" oninput="updatePreview()" />
   <div class="char-count" id="name-char-count">0 / 50</div>
 
   <label for="message">Message</label>
-  <input type="text" id="message" placeholder="Type something..." maxlength="200" oninput="updatePreview()" />
+  <input type="text" id="message" placeholder=" " maxlength="200" oninput="updatePreview()" />
   <div class="char-count" id="message-char-count">0 / 200</div>
 
   <label for="color">Text Color</label>
@@ -294,7 +294,7 @@
     } else if (message) {
       previewEl.textContent = "...: " + message;
     } else {
-      previewEl.textContent = "Your message will scroll here...";
+      previewEl.textContent = " ";
     }
   };
 </script>
